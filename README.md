@@ -1,4 +1,4 @@
-# poassport-cios Sample Code - <small>OPTiM TECH BLOG</small>
+# passport-cios Sample Code - <small>OPTiM TECH BLOG</small>
 
 https://github.com/optim-corp/passport-cios
 
