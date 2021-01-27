@@ -4,6 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+const passport = require("passport")
+const session = require("express-session")
+const CIOSStrategy = require("@optim-corp/passport-cios")
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -18,6 +22,42 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+  secret: 'keyboardcat',
+  resave: true,
+  saveUninitialized: true
+}))
+
+/**
+ * Passport設定
+ */
+passport.use(new CIOSStrategy({
+        clientID: "", // TODO: ここにClientIDを入力
+        clientSecret: "", // TODO: ここにClientSecretを入力
+        callbackURL: "http://localhost:3000/oauth2/callback",
+        scope: "openid profile user.profile", 
+      },
+    (accessToken, refreshToken, res, profile, cb) => {
+        return cb(null, res)
+    }
+))
+passport.serializeUser(function(user, done) { done(null, user); });
+passport.deserializeUser(function(user, done) { done(null, user); });
+
+app.use(passport.initialize())
+app.use(passport.session());
+
+app.get("/login/cios", passport.authenticate("cios"))
+app.get("/oauth2/callback", passport.authenticate("cios", { failureRedirect: "/" }), (req, res) => {
+    req.session.access_token = req.user.access_token    // AccessToken
+    req.session.refresh_token = req.user.refresh_token  // Refresh Token
+    return res.redirect("/")    // Redirect
+},)
+app.get("/logout", (req, res)=>{
+    req.session.access_token = null    // AccessToken
+    req.session.refresh_token = null  // Refresh Token
+    return res.redirect("/")    // Redirect
+})
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

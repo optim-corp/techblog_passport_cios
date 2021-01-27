@@ -3,7 +3,8 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  const token = req.session.access_token ? req.session.access_token : "not login"
+  res.render('index', { title: 'Express',token: token });
 });
 
 module.exports = router;
