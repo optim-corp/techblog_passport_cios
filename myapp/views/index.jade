@@ -3,4 +3,12 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  p #{token}
+  p#me "/me"
+  script.
+    fetch("/me")
+    .then(res=>res.json())
+    .then(me => {
+      console.log(me)
+      document.getElementById("me").innerHTML = JSON.stringify(me)
+    })
+

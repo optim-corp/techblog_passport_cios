@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+const fetch = require('node-fetch')
 const passport = require("passport")
 const session = require("express-session")
 const CIOSStrategy = require("@optim-corp/passport-cios")
@@ -61,6 +62,27 @@ app.get("/logout", (req, res)=>{
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+app.get('/me', async (req,res)=>{
+
+  // OAuth認可を一度も受けていない場合エラーを返す
+  if (!req.session.access_token) {
+    console.error("not login");
+    const error = {
+      "error": "not login"
+    }
+    return res.status(401).json(error)
+  }
+
+  // "/me"を叩く
+  const response = await fetch('https://accounts.optimcloudapis.com/v2/me',{
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+ req.session.access_token
+    }
+  })
+  return res.json(await response.json())
+})
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
